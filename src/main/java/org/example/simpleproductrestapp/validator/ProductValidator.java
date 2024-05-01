@@ -1,12 +1,14 @@
 package org.example.simpleproductrestapp.validator;
 
 import lombok.extern.slf4j.Slf4j;
-import org.example.simpleproductrestapp.dto.ProductSaveDto;
+import org.example.simpleproductrestapp.dto.product.ProductSaveDto;
+import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
 import java.util.stream.Collectors;
 
 @Slf4j
+@Component
 public class ProductValidator {
     public static ProductSaveDto validateProduct(ProductSaveDto productDto) {
         if (productDto.getReleaseYear() != null && productDto.getReleaseYear() > (LocalDate.now().getYear())) {

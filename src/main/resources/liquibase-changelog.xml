@@ -32,7 +32,7 @@
             <column name="release_year" type="INTEGER"/>
             <column name="price" type="DOUBLE"/>
             <column name="manufacturer_id" type="INTEGER">
-                <constraints foreignKeyName="fk_manufacturer_product" referencedTableName="manufacturer" referencedColumnNames="id"/>
+                <constraints foreignKeyName="fk_manufacturer_product" referencedTableName="manufacturer" referencedColumnNames="id" deleteCascade="true"/>
             </column>
 
         </createTable>
@@ -42,7 +42,7 @@
         <!-- Create table for categories -->
         <createTable tableName="product_categories">
             <column name="product_id" type="INTEGER">
-                <constraints foreignKeyName="fk_product_category" referencedTableName="product" referencedColumnNames="id"/>
+                <constraints foreignKeyName="fk_product_category" referencedTableName="product" referencedColumnNames="id" deleteCascade="true"/>
             </column>
             <column name="categories" type="VARCHAR(255)">
                 <constraints nullable="false"/>
@@ -94,6 +94,11 @@
             INSERT INTO manufacturer (id, name, start_cooperation_date, contact_number, email)
             VALUES (20, 'UrbanStyle', '2021-04-10', '+1234567815', 'info@urbanstyle.com');
         </sql>
+    </changeSet>
+
+    <changeSet id="add-unique-constraints" author="katya">
+    <!-- Add unique constraints to ensure uniqueness of entity names -->
+        <addUniqueConstraint tableName="manufacturer" columnNames="name" constraintName="manufacturer_name_unique"/>
     </changeSet>
 
 </databaseChangeLog>

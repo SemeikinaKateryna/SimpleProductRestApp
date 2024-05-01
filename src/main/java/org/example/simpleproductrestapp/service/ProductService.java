@@ -1,7 +1,7 @@
 package org.example.simpleproductrestapp.service;
 
-import org.example.simpleproductrestapp.dto.ProductSaveDto;
-import org.example.simpleproductrestapp.dto.ProductUpdateDto;
+import org.example.simpleproductrestapp.dto.product.ProductSaveDto;
+import org.example.simpleproductrestapp.dto.product.ProductUpdateDto;
 import org.example.simpleproductrestapp.entity.Product;
 
 public interface ProductService {
@@ -11,7 +11,8 @@ public interface ProductService {
 
     Product update(Integer id, ProductUpdateDto productUpdateDto);
 
-    void delete(Integer id);
+    boolean delete(Integer id);
+    //List<ProductListDto> list(ProductSpecifications productSpecifications);
 
     boolean upload();
 }

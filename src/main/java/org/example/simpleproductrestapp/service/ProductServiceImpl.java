@@ -5,9 +5,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.example.simpleproductrestapp.dto.ProductSaveDto;
-import org.example.simpleproductrestapp.dto.ProductUpdateDto;
-import org.example.simpleproductrestapp.dto.ProductUploadDto;
+import org.example.simpleproductrestapp.dto.product.ProductSaveDto;
+import org.example.simpleproductrestapp.dto.product.ProductUpdateDto;
+import org.example.simpleproductrestapp.dto.product.ProductUploadDto;
 import org.example.simpleproductrestapp.entity.Manufacturer;
 import org.example.simpleproductrestapp.entity.Product;
 import org.example.simpleproductrestapp.mapper.Mapper;
@@ -19,10 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 
 @Slf4j
 @Service
@@ -62,25 +59,21 @@ public class ProductServiceImpl implements ProductService {
             return null;
         }
 
-        Product product = productOptional.get();
-        if (!reasonInUpdate(product, productUpdateDto)) {
-            log.debug("No changes happened, because same object is in db!");
-            return product;
-        }
-
         ProductSaveDto productSaveDto = new ProductSaveDto();
-        Mapper.mapSaveDtoFromUpdateDto(id, productSaveDto, productUpdateDto);
+        Mapper.ProductMapping.mapSaveDtoFromUpdateDto(id, productSaveDto, productUpdateDto);
         return save(productSaveDto);
     }
 
 
     @Override
-    public void delete(Integer id) {
+    public boolean delete(Integer id) {
         Optional<Product> product = productRepository.findByIdWithManufacturer(id);
         if (product.isEmpty()) {
             log.debug("Product with id %d not found!".formatted(id));
+            return false;
         } else {
-            productRepository.delete(product.get());
+            productRepository.deleteById(id.longValue());
+            return true;
         }
     }
 
@@ -93,17 +86,18 @@ public class ProductServiceImpl implements ProductService {
 
         return writeToFile(uploadStatistics);
     }
-    
-    private Map<String, Integer> uploadFromFile(File file){
+
+    private Map<String, Integer> uploadFromFile(File file) {
         int successCount = 0;
         int failureCount = 0;
 
         try {
-            List<ProductUploadDto> productUploadDtos = objectMapper.readValue(file, new TypeReference<List<ProductUploadDto>>() {});
+            List<ProductUploadDto> productUploadDtos = objectMapper.readValue(file, new TypeReference<List<ProductUploadDto>>() {
+            });
             for (ProductUploadDto uploadDto : productUploadDtos) {
                 ProductSaveDto productSaveDto = new ProductSaveDto();
-                Mapper.mapSaveDtoFromUpload(productSaveDto,uploadDto);
-                if(save(productSaveDto)!= null){
+                Mapper.ProductMapping.mapSaveDtoFromUpload(productSaveDto, uploadDto);
+                if (save(productSaveDto) != null) {
                     successCount++;
                 } else {
                     failureCount++;
@@ -116,7 +110,7 @@ public class ProductServiceImpl implements ProductService {
         }
     }
 
-    private boolean writeToFile(Map<String, Integer> map){
+    private boolean writeToFile(Map<String, Integer> map) {
         try {
             objectMapper.writeValue(new File("./jsonFiles/uploadStatistics.json"), map);
             return true;
@@ -125,7 +119,7 @@ public class ProductServiceImpl implements ProductService {
             return false;
         }
     }
-    
+
     private Product getDataFromSaveDto(ProductSaveDto productDto) {
         Product data = null;
         Optional<Manufacturer> manufacturer = resolveManufacturer(productDto.getManufacturer_id());
@@ -140,6 +134,7 @@ public class ProductServiceImpl implements ProductService {
         }
         return data;
     }
+
     private Optional<Manufacturer> resolveManufacturer(Integer manufacturerId) {
         if (manufacturerId == null) {
             return Optional.empty();
@@ -151,15 +146,9 @@ public class ProductServiceImpl implements ProductService {
         }
         return manufacturerById;
     }
-    private boolean reasonInUpdate(Product productInDb, ProductUpdateDto productUpdateDto){
-        return Objects.equals(productInDb.getName(), productUpdateDto.getName())
-                && Objects.equals(productInDb.getReleaseYear(), productUpdateDto.getReleaseYear())
-                && Objects.equals(productInDb.getPrice(), productUpdateDto.getPrice())
-                && Objects.equals(productInDb.getManufacturer().getId(), productUpdateDto.getManufacturer_id())
-                && Objects.equals(productInDb.getCategories(), productUpdateDto.getCategories());
-    }
 
-
-
-
+//    @Override
+//    public List<ProductListDto> list(ProductSpecifications productSpecifications) {
+//        productRepository.findAllByManufacturerIdAndStartCooperationDate();
+//    }
 }

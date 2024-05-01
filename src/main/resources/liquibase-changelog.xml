@@ -1,0 +1,100 @@
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="create-schema" author="katya">
+        <!-- Create table for Manufacturer entity -->
+        <createTable tableName="manufacturer">
+            <column name="id" type="INTEGER">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="name" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="start_cooperation_date" type="DATE"/>
+            <column name="contact_number" type="VARCHAR(11)">
+                <constraints unique="true" uniqueConstraintName="contact_number_unique"/>
+            </column>
+            <column name="email" type="VARCHAR(255)">
+                <constraints unique="true" uniqueConstraintName="email_unique"/>
+            </column>
+        </createTable>
+
+    <!-- Create table for Product entity -->
+
+        <createTable tableName="product">
+            <column name="id" type="INTEGER">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="name" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="release_year" type="INTEGER"/>
+            <column name="price" type="DOUBLE"/>
+            <column name="manufacturer_id" type="INTEGER">
+                <constraints foreignKeyName="fk_manufacturer_product" referencedTableName="manufacturer" referencedColumnNames="id"/>
+            </column>
+
+        </createTable>
+    </changeSet>
+
+    <changeSet id="create-new-table-categories" author="katya">
+        <!-- Create table for categories -->
+        <createTable tableName="product_categories">
+            <column name="product_id" type="INTEGER">
+                <constraints foreignKeyName="fk_product_category" referencedTableName="product" referencedColumnNames="id"/>
+            </column>
+            <column name="categories" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="insert-data-into-manufacturer" author="katya">
+        <!-- Insert data into Manufacturer table -->
+        <sql>
+            INSERT INTO manufacturer (id, name, start_cooperation_date, contact_number, email)
+            VALUES (1, 'FashionHub', '2019-01-01', '+1234567890', 'info@fashionhub.com');
+            INSERT INTO manufacturer (id, name, start_cooperation_date, contact_number, email)
+            VALUES (2, 'StyleQueen', '2024-05-01', '+1234567891', 'info@stylequeen.com');
+            INSERT INTO manufacturer (id, name, start_cooperation_date, contact_number, email)
+            VALUES (3, 'OutdoorGear', '2019-11-20', '+1234567893', 'info@outdoorgear.com');
+            INSERT INTO manufacturer (id, name, start_cooperation_date, contact_number, email)
+            VALUES (4, 'FootwearWorld', '2021-03-10', '+1234567892', 'info@footwearworld.com');
+            INSERT INTO manufacturer (id, name, start_cooperation_date, contact_number, email)
+            VALUES (5, 'ElegantFootwear', '2017-08-30', '+1234567894', 'info@elegantfootwear.com');
+            INSERT INTO manufacturer (id, name, start_cooperation_date, contact_number, email)
+            VALUES (6, 'TinyTrends', '2020-06-25', '+1234567895', 'info@tinytrends.com');
+            INSERT INTO manufacturer (id, name, start_cooperation_date, contact_number, email)
+            VALUES (7, 'FootwearKids', '2021-01-05', '+1234567896', 'info@footwearkids.com');
+            INSERT INTO manufacturer (id, name, start_cooperation_date, contact_number, email)
+            VALUES (8, 'WarmHats', '2020-12-15', '+1234567897', 'info@warmhats.com');
+            INSERT INTO manufacturer (id, name, start_cooperation_date, contact_number, email)
+            VALUES (9, 'BeachStyle', '2021-06-20', '+1234567898', 'info@beachstyle.com');
+            INSERT INTO manufacturer (id, name, start_cooperation_date, contact_number, email)
+            VALUES (10, 'TrendyTech', '2023-01-20', '+1234567812', 'info@trendytech.com');
+            INSERT INTO manufacturer (id, name, start_cooperation_date, contact_number, email)
+            VALUES (11, 'ChicFashion', '2019-07-05', '+1234567813', 'info@chicfashion.com');
+            INSERT INTO manufacturer (id, name, start_cooperation_date, contact_number, email)
+            VALUES (12, 'CozyDreams', '2021-12-10', '+1234567811', 'info@cozydreams.com');
+            INSERT INTO manufacturer (id, name, start_cooperation_date, contact_number, email)
+            VALUES (13, 'DanceWear', '2021-02-28', '+1234567899', 'info@dancewear.com');
+            INSERT INTO manufacturer (id, name, start_cooperation_date, contact_number, email)
+            VALUES (14, 'AdventureKids', '2021-09-05', '+1234567800', 'info@adventurekids.com');
+            INSERT INTO manufacturer (id, name, start_cooperation_date, contact_number, email)
+            VALUES (15, 'SunProtect', '2020-07-01', '+1234567801', 'info@sunprotect.com');
+            INSERT INTO manufacturer (id, name, start_cooperation_date, contact_number, email)
+            VALUES (16, 'TinyTravelers', '2021-11-18', '+1234567802', 'info@tinytravelers.com');
+            INSERT INTO manufacturer (id, name, start_cooperation_date, contact_number, email)
+            VALUES (17, 'ActiveKids', '2022-03-10', '+1234567803', 'info@activekids.com');
+            INSERT INTO manufacturer (id, name, start_cooperation_date, contact_number, email)
+            VALUES (18, 'ElegantWear', '2017-09-15', '+1234567810', 'info@elegantwear.com');
+            INSERT INTO manufacturer (id, name, start_cooperation_date, contact_number, email)
+            VALUES (19, 'CozyCouture', '2022-08-15', '+1234567814', 'info@cozycouture.com');
+            INSERT INTO manufacturer (id, name, start_cooperation_date, contact_number, email)
+            VALUES (20, 'UrbanStyle', '2021-04-10', '+1234567815', 'info@urbanstyle.com');
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>
+

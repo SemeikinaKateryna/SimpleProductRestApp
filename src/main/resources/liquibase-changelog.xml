@@ -50,7 +50,7 @@
         </createTable>
     </changeSet>
 
-    <changeSet id="insert-data-into-manufacturer" author="katya">
+    <changeSet id="insert-init-data-into-manufacturer" author="katya">
         <!-- Insert data into Manufacturer table -->
         <sql>
             INSERT INTO manufacturer (id, name, start_cooperation_date, contact_number, email)

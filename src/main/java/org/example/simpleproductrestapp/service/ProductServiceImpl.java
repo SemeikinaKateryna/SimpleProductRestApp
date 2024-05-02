@@ -43,7 +43,11 @@ public class ProductServiceImpl implements ProductService {
         if (ProductValidator.validateProduct(productDto) == null) {
             return null;
         }
-        productRepository.save(getDataFromSaveDto(productDto));
+        Product data = getDataFromSaveDto(productDto);
+        if(data == null){
+            return null;
+        }
+        productRepository.save(data);
         return productDto;
     }
 

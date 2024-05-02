@@ -1,18 +1,20 @@
 package org.example.simpleproductrestapp.service;
 
+import jakarta.servlet.http.HttpServletResponse;
 import org.example.simpleproductrestapp.dto.product.ProductSaveDto;
 import org.example.simpleproductrestapp.dto.product.ProductUpdateDto;
-import org.example.simpleproductrestapp.entity.Product;
+import org.example.simpleproductrestapp.filters.ProductRequests;
 
 public interface ProductService {
-    Product save(ProductSaveDto pr);
+    ProductSaveDto save(ProductSaveDto pr);
 
-    Product getById(Integer id);
+    ProductSaveDto getById(Integer id);
 
-    Product update(Integer id, ProductUpdateDto productUpdateDto);
+    ProductSaveDto update(Integer id, ProductUpdateDto productUpdateDto);
 
     boolean delete(Integer id);
-    //List<ProductListDto> list(ProductSpecifications productSpecifications);
 
     boolean upload();
+
+    void report(HttpServletResponse response, ProductRequests reportRequest);
 }

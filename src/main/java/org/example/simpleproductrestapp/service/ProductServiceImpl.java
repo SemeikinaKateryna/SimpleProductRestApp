@@ -3,17 +3,25 @@ package org.example.simpleproductrestapp.service;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.output.ByteArrayOutputStream;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.example.simpleproductrestapp.dto.product.ProductSaveDto;
 import org.example.simpleproductrestapp.dto.product.ProductUpdateDto;
 import org.example.simpleproductrestapp.dto.product.ProductUploadDto;
 import org.example.simpleproductrestapp.entity.Manufacturer;
 import org.example.simpleproductrestapp.entity.Product;
+import org.example.simpleproductrestapp.filters.ProductRequests;
 import org.example.simpleproductrestapp.mapper.Mapper;
 import org.example.simpleproductrestapp.repository.ManufacturerRepository;
 import org.example.simpleproductrestapp.repository.ProductRepository;
 import org.example.simpleproductrestapp.validator.ProductValidator;
+import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -31,28 +39,28 @@ public class ProductServiceImpl implements ProductService {
     private final ObjectMapper objectMapper;
 
     @Override
-    public Product save(ProductSaveDto productDto) {
+    public ProductSaveDto save(ProductSaveDto productDto) {
         if (ProductValidator.validateProduct(productDto) == null) {
             return null;
         }
-
-        Product data = getDataFromSaveDto(productDto);
-        if (data == null) {
-            return null;
-        }
-
-        return productRepository.save(data);
+        productRepository.save(getDataFromSaveDto(productDto));
+        return productDto;
     }
-
 
     @Override
     @Transactional
-    public Product getById(Integer id) {
-        return productRepository.findByIdWithManufacturer(id.longValue()).orElse(null);
+    public ProductSaveDto getById(Integer id) {
+        Optional<Product> productOptional = productRepository.findByIdWithManufacturer(id.longValue());
+        if(productOptional.isEmpty()){
+            return null;
+        }
+        ProductSaveDto productSaveDto = new ProductSaveDto();
+        Mapper.ProductMapping.mapSaveDtoFromData(productOptional.get(),productSaveDto);
+        return productSaveDto;
     }
 
     @Override
-    public Product update(Integer id, ProductUpdateDto productUpdateDto) {
+    public ProductSaveDto update(Integer id, ProductUpdateDto productUpdateDto) {
         Optional<Product> productOptional = productRepository.findByIdWithManufacturer(id);
         if (productOptional.isEmpty()) {
             log.debug(String.format("Product with id %d not found!", id));
@@ -76,6 +84,46 @@ public class ProductServiceImpl implements ProductService {
             return true;
         }
     }
+    @Override
+    public void report(HttpServletResponse response, ProductRequests reportRequest) {
+        response.setContentType("application/vnd.ms-excel");
+        response.setHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=filtered_products_report.xlsx");
+
+        try (Workbook workbook = new XSSFWorkbook()) {
+            Sheet sheet = workbook.createSheet("Report");
+
+            // Создание строки с названиями столбцов
+            Row headerRow = sheet.createRow(0);
+            headerRow.createCell(0).setCellValue("ID");
+            headerRow.createCell(1).setCellValue("Product");
+            headerRow.createCell(2).setCellValue("Release Year");
+            headerRow.createCell(3).setCellValue("Price");
+            headerRow.createCell(4).setCellValue("Manufacturer ID");
+            headerRow.createCell(5).setCellValue("Manufacturer Name");
+
+            int rowNum = 1;
+            List<Product> filtered = productRepository.findAllByManufacturerIdAndReleaseYear(reportRequest.getManufacturerId(), reportRequest.getReleaseYear());
+            for (Product entity : filtered) {
+                Row row = sheet.createRow(rowNum++);
+                row.createCell(0).setCellValue(entity.getId());
+                row.createCell(1).setCellValue(entity.getName());
+                row.createCell(2).setCellValue(entity.getReleaseYear());
+                row.createCell(3).setCellValue(entity.getPrice());
+                row.createCell(4).setCellValue(entity.getManufacturer().getId());
+                row.createCell(5).setCellValue(entity.getManufacturer().getName());
+            }
+
+            try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
+                workbook.write(outputStream);
+                response.getOutputStream().write(outputStream.toByteArray());
+                response.flushBuffer();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
     @Override
     public boolean upload() {
@@ -92,7 +140,7 @@ public class ProductServiceImpl implements ProductService {
         int failureCount = 0;
 
         try {
-            List<ProductUploadDto> productUploadDtos = objectMapper.readValue(file, new TypeReference<List<ProductUploadDto>>() {
+            List<ProductUploadDto> productUploadDtos = objectMapper.readValue(file, new TypeReference<>() {
             });
             for (ProductUploadDto uploadDto : productUploadDtos) {
                 ProductSaveDto productSaveDto = new ProductSaveDto();
@@ -147,8 +195,5 @@ public class ProductServiceImpl implements ProductService {
         return manufacturerById;
     }
 
-//    @Override
-//    public List<ProductListDto> list(ProductSpecifications productSpecifications) {
-//        productRepository.findAllByManufacturerIdAndStartCooperationDate();
-//    }
+
 }

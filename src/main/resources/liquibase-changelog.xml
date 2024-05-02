@@ -101,5 +101,14 @@
         <addUniqueConstraint tableName="manufacturer" columnNames="name" constraintName="manufacturer_name_unique"/>
     </changeSet>
 
+
+    <changeSet id="add-indexes" author="katya">
+        <createIndex tableName="product" indexName="idx_product_manufacturer_id">
+            <column name="manufacturer_id"/>
+        </createIndex>
+        <createIndex tableName="product" indexName="idx_product_release_year">
+            <column name="release_year" />
+        </createIndex>
+    </changeSet>
 </databaseChangeLog>
 
